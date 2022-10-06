@@ -7,6 +7,7 @@ import { auth } from "./firebase-config";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
 } from "firebase/auth";
 
@@ -43,25 +44,34 @@ export default function App() {
     console.log(user);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmitSignIn = async (e) => {
     e.preventDefault();
     await register(registerEmail, registerPassword);
   };
 
-  // const login = async () => { };
+  const login = async (email, password) => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
+    const user = signInWithEmailAndPassword(auth, loginEmail, loginPassword)
+  };
   // const auth = getAuth();
-  // signInWithEmailAndPassword(auth, email, password)
-  //   .then((userCredential) => {
-  //     // Signed in
-  //     const user = userCredential.user;
-  //     // ...
-  //   })
-  //   .catch((error) => {
-  //     const errorCode = error.code;
-  //     const errorMessage = error.message;
-  //   });
+  const handleSubmitLogin = async (e) => {
+    e.preventDefault();
+    await login(loginEmail, loginPassword)
+  }
 
-  // const logout = async () => { };
+
+  const logout = async () => {
+    await signOut(auth)
+  };
 
   return (
     <div className="App">
@@ -71,7 +81,7 @@ export default function App() {
             <div id="signup">
               <h1>Sign Up</h1>
               <div action="/" method="post">
-                {/* <div className="top-row">
+                <div className="top-row">
                   <div className="field-wrap">
                     <input
                       placeholder="First Name*"
@@ -89,9 +99,9 @@ export default function App() {
                       autocomplete="off"
                     />
                   </div>
-                </div> */}
+                </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmitSignIn}>
                   <div className="field-wrap">
                     <input
                       className="inputs"
@@ -115,40 +125,47 @@ export default function App() {
                   </div>
 
                   <button type="submit" className="button">
-                    Get Started
+                    Create User
                   </button>
                 </form>
-                <div>{user.email}</div>
+                <div>{user?.email} <button onClick={logout}>Sign Out</button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* <div id="login">
+          <div id="login">
             <h1>Login</h1>
             <div action="/" method="post">
-              <div className="field-wrap">
-                <input
-                  placeholder="Email Address*"
-                  type="email"
-                  required
-                  autocomplete="off"
-                />
-              </div>
+              <form onSubmit={handleSubmitLogin} >
+                <div className="field-wrap">
+                  <input
+                    placeholder="Email Address*"
+                    type="email"
+                    required
+                    autocomplete="off"
+                    onChange={(e) => { setLoginEmail(e.target.value) }}
+                  />
+                </div>
 
-              <div className="field-wrap">
-                <input
-                  placeholder="Password*"
-                  type="email"
-                  required
-                  autocomplete="off"
-                />
-              </div>
+                <div className="field-wrap">
+                  <input
+                    placeholder="Password*"
+                    type="password"
+                    required
+                    autocomplete="off"
+                    onChange={(e) => { setLoginPassword(e.target.value) }}
 
-              <p className="forgot"><a href="#">Forgot Password?</a></p>
+                  />
+                </div>
 
-              <button className="button button-block">Log In</button>
+                {/* <p className="forgot"><a href="#">Forgot Password?</a></p> */}
+
+                <button type="submit" className="button">Log In</button>
+              </form>
+              {/* <div>{user?.email} <button onClick={logout}>Sign Out</button> </div> */}
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
     </div>

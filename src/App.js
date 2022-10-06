@@ -1,5 +1,5 @@
 import { async } from "@firebase/util";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import loginSignup from "./page/loginSignup";
 import { getAuth } from "firebase/auth";
@@ -7,39 +7,52 @@ import { auth } from "./firebase-config";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  onAuthStateChanged,
 } from "firebase/auth";
 
-function App() {
+export default function App() {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [user, setUser] = useState({});
 
-  const user = createUserWithEmailAndPassword(
-    auth,
-    registerEmail,
-    registerPassword)
-  console.log(user)
+  useEffect(() => {
+    onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    })
+  }, [])
 
-  const register = async () => {
-    createUserWithEmailAndPassword(auth, registerEmail, registerPassword)
+  const register = async (email, password) => {
+    createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
+        console.log("user", user);
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
       });
-  };
-  console.log('register', register())
 
+    const user = createUserWithEmailAndPassword(
+      auth,
+      registerEmail,
+      registerPassword
+    );
+    console.log(user);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await register(registerEmail, registerPassword);
+  };
 
   // const login = async () => { };
   // const auth = getAuth();
   // signInWithEmailAndPassword(auth, email, password)
   //   .then((userCredential) => {
-  //     // Signed in 
+  //     // Signed in
   //     const user = userCredential.user;
   //     // ...
   //   })
@@ -78,27 +91,34 @@ function App() {
                   </div>
                 </div> */}
 
-                <div className="field-wrap">
-                  <input
-                    className="inputs"
-                    placeholder="Email Address*"
-                    type="email"
-                    onChange={(event) => { setRegisterEmail(event.target.value) }}
-                  />
-                </div>
+                <form onSubmit={handleSubmit}>
+                  <div className="field-wrap">
+                    <input
+                      className="inputs"
+                      placeholder="Email Address*"
+                      type="email"
+                      onChange={(event) => {
+                        setRegisterEmail(event.target.value);
+                      }}
+                    />
+                  </div>
 
-                <div className="field-wrap">
-                  <input
-                    className="inputs"
-                    placeholder="Password*"
-                    type="password"
-                    onChange={(event) => { setRegisterPassword(event.target.value) }}
-                  />
-                </div>
+                  <div className="field-wrap">
+                    <input
+                      className="inputs"
+                      placeholder="Password*"
+                      type="password"
+                      onChange={(event) => {
+                        setRegisterPassword(event.target.value);
+                      }}
+                    />
+                  </div>
 
-                <button type="submit" className="button" >
-                  Get Started
-                </button>
+                  <button type="submit" className="button">
+                    Get Started
+                  </button>
+                </form>
+                <div>{user.email}</div>
               </div>
             </div>
           </div>
@@ -134,5 +154,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
